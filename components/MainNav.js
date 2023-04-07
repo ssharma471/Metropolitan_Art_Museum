@@ -9,18 +9,30 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Link from 'next/link';
 import { searchHistoryAtom } from "@/store";
 import { useAtom } from 'jotai';
+import { addToHistory } from '@/lib/userData';
+import { readToken, removeToken } from '@/lib/authenticate';
+
 function NavScrollExample() {
+    let token = readToken();
     const router = useRouter();
     const [serach, setSearch] = useState('');
     const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
 
 
-    const handleSearch = (event) => {
+    async function handleSearch(event) {
         event.preventDefault();
         router.push(`/artwork?title=true&q=${serach}`);
         setSearch("");
-        setSearchHistory(current => [...current,`title=true&q=${serach}` ]);
+        // setSearchHistory(current => [...current,`title=true&q=${serach}` ]);
+        setSearchHistory(await addToHistory(`title=true&q=${serach}`))
     };
+
+    function logout() {
+        removeToken();
+        router.push('/login');
+    }
+
+    console.log(token);
     return (
         <>
             <Navbar navbar="dark" bg="primary" expand="lg" className='fixed-top' fixed="top">
@@ -37,28 +49,29 @@ function NavScrollExample() {
                         >
                             <Link href="/" passHref legacyBehavior>
                                 <Nav.Link>
-                                Home
+                                    Home
                                 </Nav.Link>
                             </Link>
                             {/* <Nav.Link href="/" passHref legacyBehavior>Home</Nav.Link> */}
-                            <Link href="/search" passHref legacyBehavior>
-                            <Nav.Link active={router.pathname === "/search"}>Advanced Search</Nav.Link>                            
-                            </Link>
+                            {token && (<Link href="/search" passHref legacyBehavior>
+                                <Nav.Link active={router.pathname === "/search"}>Advanced Search</Nav.Link>
+                            </Link>)}
                         </Nav>
-                        <Nav>
+                        {token ? (<Nav>
                             <NavDropdown title="User Name" id="basic-nav-dropdown">
-                            <Link href="/favourites" passHref legacyBehavior>
-                            <NavDropdown.Item active={router.pathname === "/favourites"}>Favourite                   
-                                </NavDropdown.Item>
+                                <Link href="/favourites" passHref legacyBehavior>
+                                    <NavDropdown.Item active={router.pathname === "/favourites"}>Favourites</NavDropdown.Item>
                                 </Link>
                                 <Link href="/history" passHref legacyBehavior>
-                                <NavDropdown.Item active={router.pathname === "/history"}>Search History                    
-                                </NavDropdown.Item>
+                                    <NavDropdown.Item active={router.pathname === "/history"} >Search History</NavDropdown.Item>
                                 </Link>
-
+                                <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
                             </NavDropdown>
-                        </Nav>
-                        <Form className="d-flex" onSubmit={handleSearch}>
+                        </Nav>) : ((<Nav className="ms-auto">
+                            <Link href="/register" passHref legacyBehavior><Nav.Link active={router.pathname === "/register"}>Register</Nav.Link></Link>
+                            <Link href="/login" passHref legacyBehavior><Nav.Link active={router.pathname === "/login"}>Login</Nav.Link></Link>
+                        </Nav>))}
+                        {token && (<Form className="d-flex" onSubmit={handleSearch}>
                             <Form.Control
                                 value={serach}
                                 type="search"
@@ -69,8 +82,8 @@ function NavScrollExample() {
 
                             />
                             <Button variant="success" type='submit'>Search</Button>
-                        </Form>
-                        
+                        </Form>)
+                        }
                     </Navbar.Collapse>
                 </Container>
                 <br />

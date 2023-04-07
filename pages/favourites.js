@@ -6,6 +6,7 @@ import Artwork from './artwork';
 import { favouritesAtom } from '@/store';
 const favourites = () => {
   const [favouritesList] = useAtom(favouritesAtom);
+  if(!favouritesList) return null;
   
   return (
     <Row className="gy-4">

@@ -5,14 +5,14 @@ import Button from "react-bootstrap/Button";
 import { Row, Col } from "react-bootstrap";
 import { searchHistoryAtom } from "@/store";
 import { useAtom } from "jotai";
-
+import { addToHistory } from "@/lib/userData";
 const AdvancedSearch = () => {
 
   const router = useRouter();
   const [, setSearchHistory] = useAtom(searchHistoryAtom);
   const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const submitForm = (data) => {
+  async function submitForm(data) {
     let queryString = data.searchBy + "=true";
     if (data.geoLocation) {
       queryString += "&geoLocation=" + data.geoLocation;
@@ -25,7 +25,8 @@ const AdvancedSearch = () => {
     queryString += "&q=" + data.q;
 
     router.push("/artwork?" + queryString);
-    setSearchHistory(current => [...current, queryString]);
+    // setSearchHistory(current => [...current, queryString]);
+    setSearchHistory(await addToHistory(queryString))
   };
 
   return (

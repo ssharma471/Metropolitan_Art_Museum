@@ -5,14 +5,22 @@ import Error from 'next/error';
 import { useAtom } from 'jotai';
 import { favouritesAtom } from '@/store';
 import { useEffect, useState } from 'react';
+import { addToFavourites } from '@/lib/userData';
+import { removeFromFavourites } from '@/lib/userData';
 
 function ArtworkCardDetail({ objectID }) {
+    
     const [favouritesList, setFavouritesList] = useAtom(favouritesAtom)
-    const [showAdded, setshowAdded] = useState(true)
+    const [showAdded, setshowAdded] = useState(false)
+
+   
 
     const { data, error } = useSWR(
-        objectID?`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`:null)
-    ;
+        objectID ? `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}` : null)
+        ;
+        useEffect(() => {
+            setshowAdded(favouritesList?.includes(objectID))
+        }, [favouritesList])
     if (error) {
         return <Error statusCode={404} />;
     }
@@ -20,36 +28,37 @@ function ArtworkCardDetail({ objectID }) {
     if (!data) {
         return null;
     }
-    
+
     const { primaryImage, title, objectDate, classification, medium, artistDisplayName, artistWikidata_URL, creditLine, dimensions } = data;
+  
+    // useEffect(()  => {
+    //     if (favouritesList.includes(objectID)) {
+    //         setshowAdded(true);
+    //     }
+    //     else{
+    //         setshowAdded(false);
+    //     }
+    //   }, [favouritesList, objectID]);
     
-    useEffect(()  => {
-        if (favouritesList.includes(objectID)) {
+
+    async function favouritesClicked() {
+        if (showAdded) {
+            setFavouritesList(await removeFromFavourites(objectID));
+            setshowAdded(false);
+        } else {
+            setFavouritesList(await addToFavourites(objectID));
             setshowAdded(true);
         }
-        else{
-            setshowAdded(false);
-        }
-      }, [favouritesList, objectID]);
-    
-    const favouritesClicked = () => {
-        if(showAdded){
-        setFavouritesList(current => current.filter(fav => fav != objectID));
-        }
-        else{
-            setFavouritesList(current => [...current, objectID]);      
-            setshowAdded(false);
-        }
     }
-        return (
+    return (
         <Card>
             {primaryImage && (
                 <Card.Img
-                    variant="top" src={primaryImage}  
-                   // onError={(err) => {
-                    //     // err.target.onerror = null;
-                    //     err.target.src = 'https://via.placeholder.com/375x375.png?text=[+Not+Available+]';
-                    // }}
+                    variant="top" src={primaryImage}
+                // onError={(err) => {
+                //     // err.target.onerror = null;
+                //     err.target.src = 'https://via.placeholder.com/375x375.png?text=[+Not+Available+]';
+                // }}
                 />
             )}
             <Card.Body>
@@ -71,10 +80,10 @@ function ArtworkCardDetail({ objectID }) {
                     Dimensions: {dimensions || 'N/A'}
                 </Card.Text>
                 <Button variant={showAdded ? "primary" : "outline-primary"} onClick={favouritesClicked}>
-          {showAdded ? "+ Favourite (added)" : "+ Favourite"}
-        </Button>
+                    {showAdded ? "+ Favourite (added)" : "+ Favourite"}
+                </Button>
             </Card.Body>
-            
+
         </Card>
     );
 }
