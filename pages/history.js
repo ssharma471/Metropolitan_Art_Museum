@@ -6,7 +6,7 @@ import { Card } from 'react-bootstrap';
 import { ListGroup, Button } from 'react-bootstrap';
 import { removeFromHistory } from '@/lib/userData';
 import styles from '@/styles/History.module.css';
-const history = () => {
+const History = () => {
     const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
     const router = useRouter();
     let parsedHistory = [];
@@ -48,4 +48,4 @@ const history = () => {
             }
         </>)
 }
-export default history
+export default History

@@ -4,7 +4,7 @@ import { Row, Col, Card } from 'react-bootstrap';
 import ArtworkCard from '@/components/ArtworkCard'; 
 import Artwork from './artwork';
 import { favouritesAtom } from '@/store';
-const favourites = () => {
+const Favourites = () => {
   const [favouritesList] = useAtom(favouritesAtom);
   if(!favouritesList) return null;
   
@@ -30,4 +30,4 @@ const favourites = () => {
   );
 };
 
-export default favourites;
+export default Favourites;
